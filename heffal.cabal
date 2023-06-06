@@ -1,9 +1,9 @@
 cabal-version:   3.0
 name:            heffal
 version:         0.1.0.0
-license:         NONE
-author:          Joe
-maintainer:      joe@example.com
+license:         GPL-3.0-only
+author:          M3dry
+maintainer:      m3dry@tutamail.com
 build-type:      Simple
 
 common warnings
