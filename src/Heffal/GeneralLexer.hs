@@ -1,5 +1,6 @@
-module GeneralLexer where
+module Heffal.GeneralLexer where
 
+import Heffal.Helper
 import Data.Char (isSpace)
 import Data.Maybe
 
@@ -35,10 +36,15 @@ readChar lexer =
                     else Nothing
             }
 
+peekChar :: (Token a) => Lexer a -> Maybe Char
+peekChar Lexer{current = current, input = input} =
+    if length input > current + 1
+        then Just $ input !! (current + 1)
+        else Nothing
+
 ignoreWhite :: (Token a) => Lexer a -> Lexer a
 ignoreWhite lexer =
-    -- I just learned about monads :P
-    if isJust $ current_ch lexer >>= (\ch -> if isSpace ch then Just () else Nothing)
+    if justIs (current_ch lexer) isSpace
         then ignoreWhite $ readChar lexer
         else lexer
 
@@ -49,17 +55,21 @@ addTokens :: (Token a) => Lexer a -> [a] -> Lexer a
 addTokens = foldl addToken
 
 consumeUntil :: (Token a) => Lexer a -> (Char -> Bool) -> (Lexer a, Int, Maybe Char)
-consumeUntil lexer ch = let start = current lexer
-                            (consumed, found) = recur lexer ch
-                        in (consumed, start, found)
+consumeUntil lexer ch = let (consumed, start, found) = consumePeekUntil lexer ch in (readChar consumed, start, found)
+
+consumePeekUntil :: (Token a) => Lexer a -> (Char -> Bool) -> (Lexer a, Int, Maybe Char)
+consumePeekUntil lexer ch =
+    let start = current lexer
+        (consumed, found) = recur lexer ch
+     in (consumed, start, found)
   where
     recur lexer' ch'
         | isNothing $ current_ch lexer' = (lexer', Nothing)
-        | ch' $ fromJust (current_ch lexer')  = (lexer', current_ch lexer')
+        | justIs (peekChar lexer') ch' = (lexer', peekChar lexer')
         | otherwise = recur (readChar lexer') ch'
 
 getTokens :: (Token a) => Lexer a -> [a]
-getTokens = tokens . recur
+getTokens = reverse . tokens . recur
   where
     recur lexer' =
         if isNothing $ current_ch lexer'

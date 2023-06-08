@@ -1,8 +1,8 @@
-module MarkupLexer where
+module Heffal.MarkupLexer where
 
-import Helper
-import GeneralLexer
-import TextLexer
+import Heffal.Helper
+import Heffal.GeneralLexer
+import Heffal.TextLexer
 
 data MarkupToken
     = TodoOpen
@@ -26,8 +26,8 @@ instance Token MarkupToken where
                     Just '[' | first == Newline -> addToken lexer TodoOpen
                     Just _
                         | not empty && first == TodoOpen ->
-                            let (consumed, start, found) = consumeUntil lexer (==']')
-                             in addToken consumed $ if justIs found (==']') then TodoState $ take (current consumed - start) $ drop start (input consumed) else MarkupLexer.Illegal
+                            let (consumed, start, found) = consumePeekUntil lexer (==']')
+                             in addToken consumed $ if justIs found (==']') then TodoState $ subStr (input consumed) start (current consumed)  else Heffal.MarkupLexer.Illegal
                     Just ']'
                         | case first of
                             TodoState _ -> True

@@ -1,7 +1,7 @@
-module TextLexer where
+module Heffal.TextLexer where
 
-import Helper
-import GeneralLexer
+import Heffal.Helper
+import Heffal.GeneralLexer
 
 data TextToken
     = Pure String
@@ -21,7 +21,7 @@ instance Token TextToken where
                         Just '*' -> textModifier lexer '*' Bold
                         Just '/' -> textModifier lexer '/' Italic
                         -- Just _ -> lexer{current = length $ input lexer, current_ch = Nothing, tokens = [Pure $ input lexer]}
-                        Just _ -> let (consumed, start, _) = consumeUntil lexer ( == '-')
+                        Just _ -> let (consumed, start, _) = consumeUntil lexer (`elem`['`', '_', '-', '*', '/'])
                                       str = take (current consumed - start) $ drop start (input consumed)
                          in addToken consumed $ Pure str
                         _ -> addToken lexer Illegal

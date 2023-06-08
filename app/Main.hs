@@ -1,13 +1,12 @@
 module Main where
 
 import Data.Maybe
-import GeneralLexer
-import MarkupLexer
+import Heffal.GeneralLexer
+import Heffal.MarkupLexer
 
 main :: IO ()
 main = do
-    print . getTokens . (newLexer :: String -> Lexer MarkupToken) $ "\n[www]   hello text\n- nice -crossed- out - this is awesome"
-    -- print $ subStr "hello" 1 2
+    print . getTokens . (newLexer :: String -> Lexer MarkupToken) $ "# heading\n[x] todo complete\n- bullet - /*bold+*italic/"
   where
     recur lexer
         | isNothing (current_ch lexer) = []
