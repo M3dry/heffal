@@ -13,6 +13,6 @@ executable heffal
     import:           warnings
     main-is:          Main.hs
     build-depends:    base
-    other-modules:    GeneralLexer, MarkupLexer, TextLexer
+    other-modules:    GeneralLexer, MarkupLexer, TextLexer, Helper
     hs-source-dirs:   src
     default-language: Haskell2010

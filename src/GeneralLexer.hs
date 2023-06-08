@@ -45,18 +45,23 @@ ignoreWhite lexer =
 addToken :: (Token a) => Lexer a -> a -> Lexer a
 addToken lexer token = lexer{tokens = token : tokens lexer}
 
-consumeUntil :: (Token a) => Lexer a -> Char -> (Lexer a, Int)
-consumeUntil lexer ch = let start = current lexer in (recur lexer ch, start)
+addTokens :: (Token a) => Lexer a -> [a] -> Lexer a
+addTokens = foldl addToken
+
+consumeUntil :: (Token a) => Lexer a -> (Char -> Bool) -> (Lexer a, Int, Maybe Char)
+consumeUntil lexer ch = let start = current lexer
+                            (consumed, found) = recur lexer ch
+                        in (consumed, start, found)
   where
     recur lexer' ch'
-        | isNothing $ current_ch lexer' = lexer'
-        | fromJust (current_ch lexer') == ch' = lexer'
+        | isNothing $ current_ch lexer' = (lexer', Nothing)
+        | ch' $ fromJust (current_ch lexer')  = (lexer', current_ch lexer')
         | otherwise = recur (readChar lexer') ch'
 
 getTokens :: (Token a) => Lexer a -> [a]
-getTokens lexer = tokens . recur $ lexer
+getTokens = tokens . recur
   where
-    recur lexer =
-        if isNothing $ current_ch lexer
-            then lexer
-            else recur $ nextToken lexer
+    recur lexer' =
+        if isNothing $ current_ch lexer'
+            then lexer'
+            else recur $ nextToken lexer'
