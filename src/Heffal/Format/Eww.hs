@@ -6,6 +6,9 @@ import Heffal.Parser
 class EwwFmt a c where
     ewwFmt :: a -> c -> String
 
+instance (EwwFmt a c) => EwwFmt [a] c where
+    ewwFmt tokens context = foldl (\acc t -> acc ++ ewwFmt t context) "" tokens
+
 instance EwwFmt File () where
     ewwFmt (File []) _ = ""
     ewwFmt (File (x:xs)) context =
@@ -14,18 +17,11 @@ instance EwwFmt File () where
 instance EwwFmt Heading () where
     ewwFmt (Heading{name, contents}) context = ""
 
-instance EwwFmt [HeadingContent] () where
-    ewwFmt contents context =
-        foldl (\acc c -> acc ++ ewwFmt c context) "" contents
-
 instance EwwFmt HeadingContent () where
     ewwFmt hContent context = case hContent of
         Text text -> ""
         Bullet text -> ""
         Todo{state, text}-> ""
-
-instance EwwFmt [TextToken] () where
-    ewwFmt tokens context = foldl (\acc t -> acc ++ ewwFmt t context) "" tokens
 
 instance EwwFmt TextToken () where
     ewwFmt (Pure str) _ = str

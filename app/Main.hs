@@ -14,4 +14,4 @@ main = do
     print tokens
     print ast
     putStr $ fromMaybe "" $ ast >>= (\f -> Just $ cliFmt f ())
-    -- putStr $ fromMaybe "" $ ast >>= (\f -> Just $ ewwFmt f ())
+    putStr $ fromMaybe "" $ ast >>= (\f -> Just $ ewwFmt f ())
