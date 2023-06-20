@@ -14,13 +14,16 @@ library
     exposed-modules:
         Heffal.Lexer,
         Heffal.Parser,
+        Heffal.Format,
         Heffal.Format.Cli,
-        Heffal.Format.Eww
+        Heffal.Format.Eww,
+        Heffal.Format.Json
     other-modules:
         Heffal.Helper,
         Heffal.GeneralLexer
     build-depends:
         base,
+        template-haskell,
         mtl
     hs-source-dirs:   src
     default-language: GHC2021

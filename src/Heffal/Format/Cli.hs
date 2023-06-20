@@ -1,48 +1,59 @@
-module Heffal.Format.Cli (cliFmt) where
+module Heffal.Format.Cli (cliFmt, cliFmtFile, cliToks) where
 
+import Data.Maybe
+import Heffal.Format
+import Heffal.Helper
 import Heffal.Lexer (TextToken (..))
 import Heffal.Parser
 
 class CliFmt a c where
-    cliFmt :: a -> c -> String
+    cliFmt :: a -> c -> FmtConfig c -> String
 
 instance CliFmt File () where
-    cliFmt (File []) _ = ""
-    cliFmt (File (x : xs)) context =
-        cliFmt x context ++ "\n" ++ cliFmt (File xs) context
+    cliFmt (File xs) context conf@FmtConfig{heading} =
+        let f h = fromMaybe cliFmt heading h context conf
+         in joinStr f xs "\n\n"
 
 instance CliFmt Heading () where
-    cliFmt (Heading{name, contents}) context =
-        "Heading "
-            ++ cliFmt name context
-            ++ cliFmt contents context
-            ++ "\n"
+    cliFmt Heading{name, contents} context conf@FmtConfig{headingContents, textTokens} =
+        let f hC = fromMaybe cliFmt headingContents hC context conf
+            fT = fromMaybe cliToks textTokens
+         in "Heading "
+                ++ fT name
+                ++ "\n"
+                ++ f contents
 
 instance CliFmt [HeadingContent] () where
-    cliFmt contents context =
-        foldl (\acc c -> acc ++ "\n" ++ cliFmt c context) "" contents
+    cliFmt contents context conf@FmtConfig{headingContent} =
+        let f hC = fromMaybe cliFmt headingContent hC context conf
+         in joinStr f contents "\n"
 
 instance CliFmt HeadingContent () where
-    cliFmt hContent context = case hContent of
-        Text text -> "  " ++ cliFmt text context
-        Bullet text -> "  - " ++ cliFmt text context
-        Todo{state, text} -> "  [" ++ state ++ "] " ++ cliFmt text context
+    cliFmt hContent context conf@FmtConfig{textTokens} =
+        let f = fromMaybe cliToks textTokens
+         in case hContent of
+                Text text -> "  " ++ f text
+                Bullet text -> "  - " ++ f text
+                Todo{state, text} -> "  [" ++ state ++ "] " ++ f text
 
-instance CliFmt [TextToken] () where
-    cliFmt tokens context = foldl (\acc t -> acc ++ cliFmt t context) "" tokens
+textTok :: TextToken -> String
+textTok (Pure str) = str
+textTok (Verbatim text) =
+    textFmt '`' text
+textTok (Underline text) =
+    textFmt '_' text
+textTok (Crossed text) =
+    textFmt '-' text
+textTok (Bold text) =
+    textFmt '*' text
+textTok (Italic text) =
+    textFmt '/' text
 
-instance CliFmt TextToken () where
-    cliFmt (Pure str) _ = str
-    cliFmt (Verbatim text) context =
-        textFmt '`' text context
-    cliFmt (Underline text) context =
-        textFmt '_' text context
-    cliFmt (Crossed text) context =
-        textFmt '-' text context
-    cliFmt (Bold text) context =
-        textFmt '*' text context
-    cliFmt (Italic text) context =
-        textFmt '/' text context
+cliToks :: [TextToken] -> String
+cliToks tokens = joinStr textTok tokens ""
 
-textFmt :: Char -> [TextToken] -> () -> String
-textFmt ch text context = ch : cliFmt text context ++ [ch]
+textFmt :: Char -> [TextToken] -> String
+textFmt ch text = ch : cliToks text ++ [ch]
+
+cliFmtFile :: File -> () -> String
+cliFmtFile file context = cliFmt file context fmtConfigDef

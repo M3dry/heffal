@@ -1,11 +1,19 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskellQuotes #-}
 
-module Heffal.Parser (tokensToAST, File(..), Heading(..), HeadingContent(..)) where
+module Heffal.Parser (tokensToAST, File (..), Heading (..), HeadingContent (..), isText, isBullet, isTodo, heffal) where
+
+import Debug.Trace
 
 import Control.Monad.State (StateT, evalStateT, get, put)
 import Data.Maybe
 import Heffal.Lexer qualified as Lexer
+import Heffal.Lexer (TextToken(..))
+import Language.Haskell.TH
+import Language.Haskell.TH.Quote
+import Language.Haskell.TH.Syntax
 
 type Tokens = [Lexer.MarkupToken]
 
@@ -111,5 +119,51 @@ instance Parse HeadingContent where
                 justRet $ Todo{state, text}
             _ -> return Nothing
 
+isText :: HeadingContent -> Bool
+isText (Text _) = True
+isText _ = False
+
+isBullet :: HeadingContent -> Bool
+isBullet (Bullet _) = True
+isBullet _ = False
+
+isTodo :: HeadingContent -> Bool
+isTodo Todo{} = True
+isTodo _ = False
+
 tokensToAST :: Tokens -> Maybe File
 tokensToAST tokens = fromMaybe Nothing (evalStateT parse tokens)
+
+heffal =
+    QuasiQuoter
+        { quoteExp = parseStr
+        , quotePat = err "Patterns"
+        , quoteType = err "Types"
+        , quoteDec = err "Declarations"
+        }
+  where
+    err name = error $ name ++ " are not handled by the heffal quasiquoter."
+
+instance Lift File where
+    lift (File xs) = [| File xs |]
+
+instance Lift Heading where
+    lift (Heading{name, contents}) = [| Heading{name, contents} |]
+
+instance Lift HeadingContent where
+    lift (Text text) = [| Text text |]
+    lift (Bullet text) = [| Bullet text |]
+    lift (Todo{state, text}) = [| Todo{state, text} |]
+
+instance Lift TextToken where
+    lift (Pure str) = [| Pure str |]
+    lift (Verbatim text) = [| Verbatim text |]
+    lift (Underline text) = [| Underline text |]
+    lift (Crossed text) = [| Crossed text |]
+    lift (Bold text) = [| Bold text |]
+    lift (Italic text) = [| Italic text |]
+
+parseStr :: String -> Q Exp
+parseStr str = case tokensToAST $ Lexer.strToTokens str of
+    Just ast -> [|ast|]
+    Nothing -> fail $ "Failed to generate the AST for string: " ++ show str
