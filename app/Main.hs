@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module Main where
 
 import qualified Data.Map as Map
@@ -12,19 +14,12 @@ import Heffal.Config
 
 main :: IO ()
 main = do
-  let tokens = strToTokens "# heading\n- this is a bullet\n\nAnd this is text\n[ ] this is a todo\n\n# nice `heading` *very bold move*"
-  let ast = tokensToAST tokens
-  -- print tokens
-  -- print ast
-  putStrLn "START_TODO_ONLY:"
-  putStr $
-    fromMaybe "" $
-      ast
-        >>= ( \xs ->
-                Just $
-                  cliFmt
-                    xs
-                    stylesDef{ bullet = "+", todo_state_conf = TodoStateConf{ empty = "/*\\", brackets = False } }
-                    fmtConfigDef
-            )
-  putStrLn ":END_TODO_ONLY"
+  let ast = [heffal|# heading
+[ ] todo text
+- bullet text
+normal text
+
+# another heading
+- another bullet *text*
+|]
+  putStrLn $ cliFmt ast stylesDef{ bullet = "+", todo_state_conf = TodoStateConf{ empty = "/*\\", brackets = False } } fmtConfigDef{ textTokens = Just jsonToks }

@@ -1,4 +1,4 @@
-module Heffal.Format.Json (jsonFmt, jsonFmtFile) where
+module Heffal.Format.Json (jsonFmt, jsonFmtFile, jsonToks) where
 
 import Data.Maybe
 import Heffal.Format
@@ -50,5 +50,5 @@ jsonFmtFile file styles = jsonFmt file styles fmtConfigDef
 
 fromMaybeShow :: (a -> Styles -> FmtConfig -> String) -> Maybe (a -> Styles -> FmtConfig -> String) -> Styles -> FmtConfig -> (a -> String)
 fromMaybeShow dF f styles conf = case f of
-  Just f -> \h -> show $ f h styles conf
-  Nothing -> \h -> show $ dF h styles conf
+  Just f' -> \h -> show $ f' h styles conf
+  Nothing -> \h -> dF h styles conf
