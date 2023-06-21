@@ -5,24 +5,25 @@ import Heffal.Format
 import Heffal.Helper
 import Heffal.Lexer (TextToken (..))
 import Heffal.Parser
+import Heffal.Config
 
-class EwwFmt a c where
-  ewwFmt :: a -> c -> FmtConfig c -> String
+class EwwFmt a where
+  ewwFmt :: a -> Styles -> FmtConfig -> String
 
-instance EwwFmt File () where
-  ewwFmt (File xs) context conf@FmtConfig {heading} =
-    let f h = fromMaybe ewwFmt heading h context conf in joinStr f xs ""
+instance EwwFmt File where
+  ewwFmt (File xs) styles conf@FmtConfig {heading} =
+    let f h = fromMaybe ewwFmt heading h styles conf in joinStr f xs ""
 
-instance EwwFmt Heading () where
-  ewwFmt Heading {name, contents} context conf@FmtConfig {headingContents} =
-    let f hC = fromMaybe ewwFmt headingContents hC context conf in ""
+instance EwwFmt Heading where
+  ewwFmt Heading {name, contents} styles conf@FmtConfig {headingContents} =
+    let f hC = fromMaybe ewwFmt headingContents hC styles conf in ""
 
-instance EwwFmt [HeadingContent] () where
-  ewwFmt headings context conf@FmtConfig {headingContent} =
-    let f hC = fromMaybe ewwFmt headingContent hC context conf in joinStr f headings ""
+instance EwwFmt [HeadingContent] where
+  ewwFmt headings styles conf@FmtConfig {headingContent} =
+    let f hC = fromMaybe ewwFmt headingContent hC styles conf in joinStr f headings ""
 
-instance EwwFmt HeadingContent () where
-  ewwFmt hContent context conf@FmtConfig {textTokens} =
+instance EwwFmt HeadingContent where
+  ewwFmt hContent styles FmtConfig {textTokens} =
     let f = fromMaybe ewwToks textTokens
      in case hContent of
           Text text -> ""
@@ -52,5 +53,5 @@ box :: String -> String -> String
 box style contents =
   "(box :style \"" ++ style ++ "\" :halign \"start\" " ++ contents ++ ")"
 
-ewwFmtFile :: File -> () -> String
-ewwFmtFile file context = ewwFmt file context fmtConfigDef
+ewwFmtFile :: File -> Styles -> String
+ewwFmtFile file styles = ewwFmt file styles fmtConfigDef

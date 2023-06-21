@@ -2,17 +2,18 @@ module Heffal.Format (FmtConfig (..), fmtConfigDef) where
 
 import Heffal.Lexer
 import Heffal.Parser
+import Heffal.Config
 
-type FmtConfigToStr a c = Maybe (a -> c -> FmtConfig c -> String)
+type FmtConfigToStr a = Maybe (a -> Styles -> FmtConfig -> String)
 
-data FmtConfig c = FmtConfig
-  { heading :: FmtConfigToStr Heading c,
-    headingContents :: FmtConfigToStr [HeadingContent] c,
-    headingContent :: FmtConfigToStr HeadingContent c,
+data FmtConfig = FmtConfig
+  { heading :: FmtConfigToStr Heading,
+    headingContents :: FmtConfigToStr [HeadingContent],
+    headingContent :: FmtConfigToStr HeadingContent,
     textTokens :: Maybe ([TextToken] -> String)
   }
 
-fmtConfigDef :: FmtConfig c
+fmtConfigDef :: FmtConfig
 fmtConfigDef =
   FmtConfig
     { heading = Nothing,

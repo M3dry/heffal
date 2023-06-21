@@ -14,6 +14,7 @@ library
     exposed-modules:
         Heffal.Lexer,
         Heffal.Parser,
+        Heffal.Config,
         Heffal.Format,
         Heffal.Format.Cli,
         Heffal.Format.Eww,
@@ -24,7 +25,8 @@ library
     build-depends:
         base,
         template-haskell,
-        mtl
+        mtl,
+        containers
     hs-source-dirs:   src
     default-language: GHC2021
 
@@ -44,6 +46,6 @@ test-suite tests
 executable heffal
     import:           warnings
     main-is:          Main.hs
-    build-depends:    base, heffal, mtl
+    build-depends:    base, heffal, mtl, containers
     hs-source-dirs:   app
     default-language: GHC2021
