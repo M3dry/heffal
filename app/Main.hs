@@ -16,10 +16,10 @@ main :: IO ()
 main = do
   let ast = [heffal|# heading
 [ ] todo text
-- bullet text
+- bullet "text"
 normal text
 
 # another heading
 - another bullet *text*
 |]
-  putStrLn $ cliFmt ast stylesDef{ bullet = "+", todo_state_conf = TodoStateConf{ empty = "/*\\", brackets = False } } fmtConfigDef{ textTokens = Just jsonToks }
+  putStrLn $ jsonFmt ast stylesDef{ bullet = "+", todo_state_conf = TodoStateConf{ empty = "/*\\", brackets = False } } fmtConfigDef{ headingContent = Just cliFmt }

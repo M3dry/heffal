@@ -31,20 +31,17 @@ instance CliFmt [HeadingContent] where
          in joinStr f contents "\n"
 
 instance CliFmt HeadingContent where
-    cliFmt hContent styles FmtConfig{textTokens} =
+    cliFmt hContent Styles{bullet, todo_state, todo_state_conf = TodoStateConf{empty, brackets}} FmtConfig{textTokens} =
         let f = fromMaybe cliToks textTokens
          in case hContent of
                 Text text -> indent ++ f text
-                Bullet text -> indent ++ bullet styles ++ " " ++ f text
+                Bullet text -> indent ++ bullet ++ " " ++ f text
                 Todo{state, text} ->
-                     let styled_state = (case Map.lookup state $ todo_state styles of
-                            _ | all (==' ') state -> empty $ todo_state_conf styles
+                     let styled_state = (case Map.lookup state todo_state of
+                            _ | all (==' ') state -> empty
                             Just s -> s
                             _ -> state)
-                         brackets_state = if brackets $ todo_state_conf styles
-                            then "[" ++ styled_state ++ "]"
-                            else styled_state
-
+                         brackets_state = if brackets then "[" ++ styled_state ++ "]" else styled_state
                     in
                      indent ++ brackets_state ++ " " ++ f text
       where
