@@ -1,5 +1,4 @@
 module Heffal.Config where
-import qualified Data.Map.Strict as Map
 
 data Config = Config
     { template_y :: Maybe String
@@ -13,11 +12,11 @@ data Config = Config
 data Styles = Styles
     { bullet :: String
     , todo_state_conf :: TodoStateConf
-    , todo_state :: Map.Map String String
+    , todo_state :: [(String, String)]
     }
 
 stylesDef :: Styles
-stylesDef = Styles{ bullet = "-", todo_state_conf = todoStateConfDef, todo_state = Map.empty }
+stylesDef = Styles{ bullet = "-", todo_state_conf = todoStateConfDef, todo_state = [] }
 
 data TodoStateConf = TodoStateConf
     { empty :: String
