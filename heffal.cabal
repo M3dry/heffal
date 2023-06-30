@@ -48,12 +48,12 @@ executable heffal
     main-is:          Main.hs
     other-modules:
         Args
-        Args.Parser
     build-depends:
         base,
         heffal,
         mtl,
         containers,
-        transformers
+        transformers,
+        optparse-applicative
     hs-source-dirs:   app
     default-language: GHC2021
